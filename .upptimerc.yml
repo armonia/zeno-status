@@ -1,6 +1,6 @@
 # Pagina di stato di Zeno CMS / Zeno CMS status page
 # Pubblicata su https://status.zenocms.io (GitHub Pages, controlli ogni 5 minuti con GitHub Actions).
-# Qui non ci sono segreti: l'unico indirizzo non pubblicato sta nel secret FLY_HEALTH_URL.
+# Nessun segreto in questo file: l'indirizzo del front dei domini sta nel secret FLY_HEALTH_URL.
 owner: armonia
 repo: zeno-status
 
