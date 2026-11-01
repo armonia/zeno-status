@@ -23,5 +23,24 @@ Visti direttamente (struttura e pattern): **status.claude.com** (la reference ch
 - **Accessibilità**: contrasti AA, salto al contenuto, focus visibile, ogni barra ha un testo alternativo con i giorni problematici (`role=img`), movimento ridotto rispettato.
 - **Pallino del footer (PR #168)**: legge `raw.githubusercontent.com/armonia/zeno-status/master/history/summary.json` e cerca `status === "down"`. Non l'ho toccato: il file lo scrive ancora Upptime, formato identico.
 
+## Versione compatta (1 nov 2026, anteprima su /anteprima/)
+Richiesta: stessa qualità, meno spazio; lo stato dei servizi deve stare in una schermata desktop (1440x900) senza scorrere. La versione a colonna era alta 4373 px.
+
+**Riguardate, con screenshot headless a 1440x900:** status.openai.com e linearstatus.com (entrambe incident.io), status.supabase.com (incident.io, 30+ componenti), status.openstatus.dev (OpenStatus, open source), status.betterstack.com.
+
+Cosa prendo:
+- **Banner in una riga, non un titolo enorme** (incident.io: riquadro con bordo del colore dello stato, icona + una frase + una riga di spiegazione). Aggiungo a destra il conteggio "6/6 servizi operativi", che il browser aggiorna insieme alle pillole.
+- **Nome, stato e percentuale sulla stessa riga della barra** (incident.io, OpenStatus: "Marketing — 100%" sopra la barra, nessuna riga "90 giorni fa ... Oggi" sotto ogni servizio). La scala la dico una volta sola nell'intestazione della sezione.
+- **Barre sottili e basse** (OpenAI/Linear: ~4 px di larghezza, ~20 px di altezza, 90 giorni anche su card da 530 px): 26 px di altezza, 2 px di spazio.
+- **Legenda in una riga** (OpenStatus la mette in testa in una riga sola), con a destra la data d'inizio del monitoraggio.
+- **Disservizi in lista compatta**, solo i giorni che ne hanno (incident.io rimanda a "View history" invece di elencare giorni vuoti; BetterStack li sposta in una scheda a parte). Con zero disservizi: una riga "Nessun disservizio negli ultimi 30 giorni".
+- Da noi in più: con 6 servizi la colonna unica di incident.io spreca metà schermo, quindi **griglia a 2 colonne di card** (1 sotto i 700 px), e **disservizi e manutenzioni affiancati** sotto (3/5 e 2/5).
+
+Cosa non prendo: componenti espandibili (Supabase/OpenAI, utili con decine di componenti, qui sono 6), calendario mensile di Linear (ridondante con le barre), font monospazio di OpenStatus (non è il design di Zeno).
+
+**Misure (1440x900):** pagina intera 900 px (prima 4373), tutte e 6 le card + legenda entro 620 px, disservizi e manutenzioni visibili senza scorrere. Mobile 390 px: 1663 px, una colonna, descrizioni a capo (niente testo tagliato).
+
+**Passaggio in produzione:** in `scripts/build.mjs` `const PRODUZIONE = "classico"` → `"compatto"`, commit e push su master: il workflow "Pagina di stato" ripubblica, la compatta va su `/` e `/en/` e `/anteprima/` smette di esistere. Tornare indietro: rimettere `"classico"`.
+
 ## Controlli ogni 5 minuti
 Il cron di GitHub Actions parte ma salta ore (nelle prime 12 ore: 3 esecuzioni su ~144). Rimedio gratuito: `io.zenocms.status-trigger` (launchd sul Mac del gateway, ogni 5 minuti, `gh workflow run uptime.yml`) + cron di GitHub come rete di sicurezza. Soluzione definitiva fuori dal Mac: Cloudflare Worker con cron (pronto in `ops/cloudflare-trigger/`), richiede un token GitHub ristretto creato dal proprietario.

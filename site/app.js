@@ -46,10 +46,10 @@
       if (!res.ok) return;
       const data = await res.json();
       if (!Array.isArray(data) || !data.length) return;
-      let down = 0, deg = 0;
+      let down = 0, deg = 0, up = 0;
       for (const s of data) {
         const st = s.status === "down" ? "down" : s.status === "degraded" ? "degraded" : "up";
-        down += st === "down"; deg += st === "degraded";
+        down += st === "down"; deg += st === "degraded"; up += st === "up";
         const pill = document.querySelector(`.pill[data-slug="${CSS.escape(s.slug)}"]`);
         if (!pill) continue;
         pill.className = `pill ${st}`;
@@ -57,8 +57,11 @@
       }
       const g = down === data.length ? "major" : down ? "partial" : deg ? "degraded" : "ok";
       const banner = document.querySelector(".banner");
-      banner.className = `banner ${g}`;
+      banner.classList.remove("ok", "degraded", "partial", "major");
+      banner.classList.add(g);
       banner.querySelector(".bt").textContent = GL[g];
+      const cnt = document.querySelector(".cnt");
+      if (cnt) cnt.textContent = `${up}/${data.length}`;
       document.body.className = `g-${g}`;
     } catch { /* senza rete resta lo stato della pagina */ }
   }

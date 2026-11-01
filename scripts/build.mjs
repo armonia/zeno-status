@@ -11,6 +11,9 @@ const OUT = join(ROOT, "dist");
 const SITE = "https://status.zenocms.io";
 const REPO = "armonia/zeno-status";
 const DAYS = 90;
+// Pagina in produzione: "classico" (servizi in colonna) o "compatto" (griglia densa).
+// Finché è "classico", la compatta si pubblica come anteprima su /anteprima/.
+const PRODUZIONE = "classico";
 const offline = process.argv.includes("--offline");
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -213,9 +216,104 @@ const html = `<!doctype html>
 `;
 
 
+// ---------- pagina compatta: griglia di servizi, banner in una riga, disservizi in lista ----------
+const compatto = (base) => {
+  const ok = services.filter((s) => s.status === "up").length;
+  const card = (s) => `
+<article class="svc" aria-labelledby="h-${s.slug}">
+  <div class="svc-head">
+    <h3 id="h-${s.slug}">${bi(esc(s.lab.it), esc(s.lab.en))}</h3>
+    <span class="pill ${s.status}" data-slug="${s.slug}"><i class="dot"></i><span class="pt">${bi(...stTxt[s.status])}</span></span>
+    <p class="desc muted" title="${bi(esc(s.lab.dIt), esc(s.lab.dEn))}">${bi(esc(s.lab.dIt), esc(s.lab.dEn))}</p>
+    <p class="num"><b>${bi(fmtPctIt(s.uptime), fmtPct(s.uptime))}</b> <span class="muted">${bi("attivo", "uptime")}${s.ms ? ` · ${s.ms} ms` : ""}</span></p>
+  </div>
+  <div class="bars" role="img" aria-labelledby="d-${s.slug}">${barsHtml(s)}</div>
+  <p class="sr" id="d-${s.slug}">${esc(L === "it" ? "Ultimi 90 giorni. " : "Last 90 days. ")}${esc(srDays(s, L))}</p>
+</article>`;
+  const lc = L === "it" ? "it-IT" : "en-GB";
+  const since = new Date(now.getTime() - 30 * 86400000).toISOString();
+  const recent = incidents.filter((i) => i.start >= since);
+  const incRows = recent.slice(0, 6).map((i) => {
+    const open = !i.end;
+    return `<li class="${open ? "open" : ""}"><i class="sev"></i><div>
+      <b>${bi(`${esc(i.sv.lab.it)} non raggiungibile`, `${esc(i.sv.lab.en)} unreachable`)}</b>
+      <span class="muted"><time datetime="${i.start}">${fmtHour(i.start, lc)}</time>${open ? "" : ` · ${i.mins} min`} · ${open ? bi("In corso", "Ongoing") : bi("Risolto", "Resolved")} · <a href="https://github.com/${REPO}/issues/${i.n}">${bi("Dettagli", "Details")}</a></span></div></li>`;
+  }).join("");
+  const mList = [...upcoming, ...pastMaint.slice(0, 2)];
+  const mRows = mList.map((m) => `<li class="mnt"><i class="sev"></i><div><b>${esc(m.title)}</b><span class="muted">${fmtHour(m.start, lc)} → ${fmtHour(m.end, lc)}</span></div></li>`).join("");
+  return `<!doctype html>
+<html lang="${L}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${L === "it" ? "Zeno CMS · Stato dei servizi" : "Zeno CMS · Service status"}</title>
+<meta name="description" content="${L === "it" ? "Stato in tempo reale dei servizi Zeno CMS, con storico a 90 giorni." : "Real-time status of Zeno CMS services with a 90-day history."}">
+<meta name="color-scheme" content="light dark">
+${base ? '<meta name="robots" content="noindex">\n' : ""}<meta property="og:title" content="Zeno CMS · ${L === "it" ? "Stato dei servizi" : "Service status"}">
+<meta property="og:description" content="${esc(bi(globalTxt[0], globalTxt[1]))}">
+<meta property="og:type" content="website"><meta property="og:url" content="${SITE}/">
+<link rel="canonical" href="${SITE}${L === "it" ? "/" : "/en/"}">
+<link rel="alternate" hreflang="it" href="${SITE}/">
+<link rel="alternate" hreflang="en" href="${SITE}/en/">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="alternate" type="application/atom+xml" title="Zeno CMS · Stato" href="/feed.xml">
+<link rel="preload" href="/fonts/satoshi-500.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/compatto.css">
+</head>
+<body class="g-${global}">
+<a class="skip" href="#main">${bi("Vai al contenuto", "Skip to content")}</a>
+<header class="top"><div class="wrap top-in">
+  <a class="logo" href="https://zenocms.io" aria-label="Zeno CMS"><img class="logo-l" src="/img/logo-zeno-black.svg" alt="Zeno" width="117" height="20"><img class="logo-d" src="/img/logo-zeno-white.svg" alt="" width="117" height="20"><span class="logo-tag">${bi("Stato", "Status")}</span></a>
+  <nav class="top-nav" aria-label="Menu">
+    <div class="lang" role="group" aria-label="Lingua / Language"><a href="${base}/" hreflang="it" lang="it"${L === "it" ? ' aria-current="true"' : ""}>IT</a><a href="${base}/en/" hreflang="en" lang="en"${L === "en" ? ' aria-current="true"' : ""}>EN</a></div>
+    <a class="btn" href="/feed.xml" aria-label="${bi("Iscriviti agli aggiornamenti (feed Atom)", "Subscribe to updates (Atom feed)")}">${bi("Iscriviti", "Subscribe")}</a>
+  </nav>
+</div></header>
+<main id="main" class="wrap">
+  <section class="banner ${global}" aria-live="polite">
+    <i class="dot big"></i>
+    <div class="b-txt"><h1 class="bt">${bi(globalTxt[0], globalTxt[1])}</h1>
+      <p class="muted">${bi("Controlli automatici ogni 5 minuti, da fuori dall'infrastruttura di Zeno.", "Automated checks every 5 minutes, from outside Zeno's own infrastructure.")}</p></div>
+    <p class="b-cnt"><b class="cnt" data-tot="${services.length}">${ok}/${services.length}</b> <span class="muted">${bi("servizi operativi", "services operational")}</span></p>
+  </section>
+  <section aria-labelledby="h-svc">
+    <div class="sec-head"><h2 id="h-svc">${bi("Servizi", "Services")}</h2><span class="muted">${bi("Ultimi 90 giorni, fino a oggi", "Last 90 days, up to today")}</span></div>
+    <div class="grid">${services.map(card).join("")}</div>
+    <div class="legend muted"><span><i class="b ok"></i>${bi("Operativo", "Operational")}</span><span><i class="b minor"></i>${bi("Problemi parziali", "Partial issues")}</span><span><i class="b major"></i>${bi("Disservizio", "Outage")}</span><span><i class="b none"></i>${bi("Nessun dato", "No data")}</span>
+      <span class="since">${bi("Monitoraggio attivo dal", "Monitoring since")} ${fmtDay(services.map((x) => x.start).sort()[0], lc)}</span></div>
+  </section>
+  <div class="lower">
+    <section class="panel" aria-labelledby="h-inc">
+      <div class="sec-head"><h2 id="h-inc">${bi("Disservizi recenti", "Recent incidents")}</h2><span class="muted">${bi("Ultimi 30 giorni", "Last 30 days")}</span></div>
+      ${recent.length ? `<ol class="list">${incRows}</ol>` : `<p class="empty"><i class="dot"></i>${bi("Nessun disservizio negli ultimi 30 giorni.", "No incidents in the last 30 days.")}</p>`}
+      <p class="more muted">${recent.length > 6 ? bi(`Altri ${recent.length - 6} nello `, `${recent.length - 6} more in the `) : bi("Lo ", "The ")}<a href="https://github.com/${REPO}/issues?q=label%3Astatus">${bi("storico completo su GitHub", "full history on GitHub")}</a>.</p>
+    </section>
+    <section class="panel" aria-labelledby="h-mnt">
+      <div class="sec-head"><h2 id="h-mnt">${bi("Manutenzioni", "Maintenance")}</h2></div>
+      ${mList.length ? `<ol class="list">${mRows}</ol>` : `<p class="empty muted-ic">${bi("Nessuna manutenzione programmata.", "No maintenance scheduled.")}</p>`}
+      <p class="more muted">${bi("Aggiornamenti via", "Updates via")} <a href="/feed.xml">${bi("feed Atom", "Atom feed")}</a> · <a href="/status.json">status.json</a></p>
+    </section>
+  </div>
+</main>
+<footer class="foot"><div class="wrap foot-in">
+  <span>© Zeno CMS · <a href="https://zenocms.io">zenocms.io</a></span>
+  <span><a href="https://github.com/${REPO}">${bi("Codice aperto", "Open source")}</a> · ${bi("Controlli con", "Checks by")} <a href="https://upptime.js.org">Upptime</a></span>
+</div></footer>
+<div id="tip" class="tip" role="status" hidden></div>
+<script src="/app.js" defer></script>
+</body></html>
+`;
+};
+
+const prod = PRODUZIONE === "compatto" ? compatto("") : html;
 mkdirSync(lang === "it" ? OUT : join(OUT, "en"), { recursive: true });
-writeFileSync(join(lang === "it" ? OUT : join(OUT, "en"), "index.html"), html);
-if (lang === "it") writeFileSync(join(OUT, "404.html"), html.replace("<title>", "<!-- 404 --><title>"));
+writeFileSync(join(lang === "it" ? OUT : join(OUT, "en"), "index.html"), prod);
+if (lang === "it") writeFileSync(join(OUT, "404.html"), prod.replace("<title>", "<!-- 404 --><title>"));
+if (PRODUZIONE !== "compatto") {
+  const dir = join(OUT, "anteprima", lang === "it" ? "" : "en");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "index.html"), compatto("/anteprima"));
+}
 }
 // ---------- feed Atom ----------
 const entries = incidents.slice(0, 30).map((i) => {
@@ -227,7 +325,7 @@ const feed = `<?xml version="1.0" encoding="utf-8"?>
 `;
 
 // ---------- uscita ----------
-for (const f of ["style.css", "app.js"]) cpSync(join(ROOT, "site", f), join(OUT, f));
+for (const f of ["style.css", "compatto.css", "app.js"]) cpSync(join(ROOT, "site", f), join(OUT, f));
 cpSync(join(ROOT, "site/fonts"), join(OUT, "fonts"), { recursive: true });
 cpSync(join(ROOT, "site/img"), join(OUT, "img"), { recursive: true });
 writeFileSync(join(OUT, "feed.xml"), feed);
