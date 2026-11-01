@@ -13,7 +13,7 @@ const REPO = "armonia/zeno-status";
 const DAYS = 90;
 // Pagina in produzione: "classico" (servizi in colonna) o "compatto" (griglia densa).
 // Finché è "classico", la compatta si pubblica come anteprima su /anteprima/.
-const PRODUZIONE = "classico";
+const PRODUZIONE = "compatto";
 const offline = process.argv.includes("--offline");
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
