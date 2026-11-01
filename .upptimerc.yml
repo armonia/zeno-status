@@ -1,31 +1,116 @@
-# Change these first
-owner: upptime # Your GitHub organization or username, where this repository lives
-repo: upptime # The name of this repository
+# Pagina di stato di Zeno CMS / Zeno CMS status page
+# Pubblicata su https://status.zenocms.io (GitHub Pages, controlli ogni 5 minuti con GitHub Actions).
+# Qui non ci sono segreti: l'unico indirizzo non pubblicato sta nel secret FLY_HEALTH_URL.
+owner: armonia
+repo: zeno-status
+
+# Elenco chiuso dei secret che i controlli possono usare.
+secrets:
+  - FLY_HEALTH_URL
 
 sites:
-  - name: Google
-    url: https://www.google.com
-  - name: Wikipedia
-    url: https://en.wikipedia.org
-  - name: Hacker News
-    url: https://news.ycombinator.com
-  - name: Secret Site
-    url: $SECRET_SITE
+  - name: Sito · Website
+    url: https://zenocms.io
+    slug: sito
+    icon: https://zenocms.io/favicon.svg
+  - name: API
+    url: https://api.zenocms.io/health
+    slug: api
+  - name: MCP (agenti AI · AI agents)
+    # Senza token l'MCP risponde 401: vuol dire che è su e che chiede l'accesso.
+    url: https://api.zenocms.io/mcp
+    slug: mcp
+    method: POST
+    headers:
+      - "Content-Type: application/json"
+      - "Accept: application/json, text/event-stream"
+    body: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+    expectedStatusCodes:
+      - 401
+  - name: Accesso · Login
+    url: https://api.zenocms.io/api/auth/ok
+    slug: accesso
+  - name: REST dei siti · Site REST
+    # Senza chiave risponde 401: è su e chiede l'accesso.
+    url: https://api.zenocms.io/rest/v1/
+    slug: rest
+    expectedStatusCodes:
+      - 401
+  - name: Domini personalizzati · Custom domains
+    url: $FLY_HEALTH_URL
+    slug: domini
 
 status-website:
-  # Add your custom domain name, or remove the `cname` line if you don't have a domain
-  # Uncomment the `baseUrl` line if you don't have a custom domain and add your repo name there
-  cname: demo.upptime.js.org
-  # baseUrl: /your-repo-name
-  logoUrl: https://raw.githubusercontent.com/upptime/upptime.js.org/master/static/img/icon.svg
-  name: Upptime
-  introTitle: "**Upptime** is the open-source uptime monitor and status page, powered entirely by GitHub."
-  introMessage: This is a sample status page which uses **real-time** data from our [GitHub repository](https://github.com/upptime/upptime). No server required — just GitHub Actions, Issues, and Pages. [**Get your own for free**](https://github.com/upptime/upptime)
+  cname: status.zenocms.io
+  name: Zeno CMS · Stato / Status
+  logoUrl: https://status.zenocms.io/zeno-icon.svg
+  favicon: https://status.zenocms.io/zeno-icon.svg
+  faviconSvg: https://status.zenocms.io/zeno-icon.svg
+  theme: light
+  introTitle: "**Stato dei servizi Zeno** · Zeno service status"
+  introMessage: >-
+    Controlli automatici ogni 5 minuti, fuori dall'infrastruttura di Zeno, con storico pubblico.
+    · Automated checks every 5 minutes, hosted outside Zeno's own infrastructure, with a public history.
   navbar:
-    - title: Status
+    - title: Stato · Status
       href: /
-    - title: GitHub
-      href: https://github.com/$OWNER/$REPO
+    - title: Zeno CMS
+      href: https://zenocms.io
+  metaTags:
+    - name: "description"
+      content: "Stato in tempo reale dei servizi Zeno CMS. Real-time status of Zeno CMS services."
+  css: >-
+    a { color: #a23bc4; }
+    .logo { height: 28px; }
 
-# Upptime also supports notifications, assigning issues, and more
-# See https://upptime.js.org/docs/configuration
+i18n:
+  activeIncidents: Disservizi in corso · Active incidents
+  allSystemsOperational: Tutto funziona · All systems operational
+  incidentReport: "Disservizio n. $NUMBER →"
+  activeIncidentSummary: Aperto il $DATE, $POSTS aggiornamenti
+  incidentTitle: Disservizio $NUMBER
+  incidentDetails: Dettagli del disservizio
+  incidentFixed: Risolto
+  incidentOngoing: In corso
+  incidentOpenedAt: Aperto il
+  incidentClosedAt: Chiuso il
+  incidentViewOnGitHub: Vedi e segui su GitHub
+  incidentCommentSummary: Pubblicato il $DATE da $AUTHOR
+  incidentBack: ← Tutti i disservizi
+  pastIncidents: Disservizi passati · Past incidents
+  pastIncidentsResolved: Risolto in $MINUTES minuti, $POSTS aggiornamenti
+  liveStatus: Stato attuale · Live status
+  overallUptime: "Disponibilità complessiva: $UPTIME"
+  overallUptimeTitle: Disponibilità complessiva
+  averageResponseTime: "Tempo di risposta medio: $TIMEms"
+  averageResponseTimeTitle: Risposta media
+  sevelDayResponseTime: Tempo di risposta, 7 giorni
+  responseTimeMs: Tempo di risposta (ms)
+  up: Attivo
+  down: Fermo
+  degraded: Rallentato
+  ms: ms
+  loading: Caricamento
+  navGitHub: GitHub
+  footer: "Pagina [open source]($REPO) · Open-source page, powered by [Upptime](https://upptime.js.org)"
+  errorTitle: Errore · Error
+  errorIntro: Non riesco a leggere lo stato aggiornato. · Could not load the latest status.
+  errorText: Riprova tra qualche istante. · Please try again shortly.
+  errorHome: Torna alla home · Back to home
+  pastScheduledMaintenance: Manutenzioni passate · Past maintenance
+  scheduledMaintenance: Manutenzione programmata · Scheduled maintenance
+  scheduledMaintenanceSummaryStarted: Iniziata il $DATE, $DURATION minuti
+  scheduledMaintenanceSummaryStarts: Inizia il $DATE, $DURATION minuti
+  startedAt: Iniziata il
+  startsAt: Inizia il
+  duration: Durata
+  durationMin: $DURATION minuti
+  incidentCompleted: Completata
+  incidentScheduled: Programmata
+  duration24H: 24h
+  duration7D: 7g
+  duration30D: 30g
+  duration1Y: 1a
+  durationAll: tutto
+  locale: it-IT
+
