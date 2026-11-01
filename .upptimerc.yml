@@ -39,9 +39,6 @@ sites:
   - name: Domini personalizzati · Custom domains
     url: $FLY_HEALTH_URL
     slug: domini
-  - name: Prova finta (temporanea)
-    url: https://zeno-prova-finta.invalid
-    slug: prova-finta
 
 status-website:
   cname: status.zenocms.io
