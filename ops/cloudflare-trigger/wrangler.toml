@@ -1,0 +1,7 @@
+name = "zeno-status-trigger"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[triggers]
+crons = ["*/5 * * * *"]
+# Poi: npx wrangler secret put GITHUB_TOKEN   (token a grana fine, solo questo repo, Actions: Read and write)

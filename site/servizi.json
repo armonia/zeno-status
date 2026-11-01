@@ -1,0 +1,8 @@
+{
+  "sito": { "it": "Sito", "en": "Website", "dIt": "zenocms.io, la pagina pubblica di Zeno", "dEn": "zenocms.io, Zeno's public website" },
+  "api": { "it": "API", "en": "API", "dIt": "Il servizio a cui parlano editor, SDK e siti", "dEn": "The service editors, SDKs and sites talk to" },
+  "mcp": { "it": "MCP per agenti AI", "en": "MCP for AI agents", "dIt": "Il collegamento per Claude, ChatGPT e altri agenti", "dEn": "The connection for Claude, ChatGPT and other agents" },
+  "accesso": { "it": "Accesso", "en": "Login", "dIt": "Accesso e registrazione all'account", "dEn": "Sign-in and sign-up" },
+  "rest": { "it": "REST dei siti", "en": "Site REST", "dIt": "L'interfaccia REST dei contenuti di ogni sito", "dEn": "The REST interface to each site's content" },
+  "domini": { "it": "Domini personalizzati", "en": "Custom domains", "dIt": "I siti dei clienti sul loro dominio, con HTTPS", "dEn": "Customer sites on their own domain, with HTTPS" }
+}

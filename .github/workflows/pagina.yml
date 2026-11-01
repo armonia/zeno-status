@@ -1,0 +1,52 @@
+# Pagina di stato di Zeno: genera la pagina statica dai dati di Upptime e la pubblica su
+# GitHub Pages (status.zenocms.io). Non è generato da Upptime: è nostro e non viene
+# sovrascritto da "Update Template CI". La pubblicazione parte solo se lo stato dei
+# servizi è cambiato o la pagina ha più di 30 minuti (le Pages accettano ~10 build/ora).
+# Il badge in tempo reale lo legge il browser da history/summary.json.
+name: Pagina di stato
+on:
+  workflow_run:
+    workflows: ["Uptime CI", "Summary CI", "Updates CI", "Setup CI"]
+    types: [completed]
+  push:
+    branches: [master]
+    paths: ["site/**", "scripts/**", ".github/workflows/pagina.yml"]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: pagina-di-stato
+  cancel-in-progress: true
+jobs:
+  pubblica:
+    name: Genera e pubblica
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: master
+          fetch-depth: 0
+      - name: Genera la pagina
+        run: node scripts/build.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+      - name: Serve pubblicare?
+        id: decide
+        run: |
+          set -u
+          live=$(curl -fsS --max-time 20 https://status.zenocms.io/status.json 2>/dev/null || echo '{}')
+          norm() { jq -c '[.services[]? | [.slug, .status]]' <<<"$1"; }
+          if [ "${{ github.event_name }}" != "workflow_run" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$(norm "$live")" != "$(norm "$(cat dist/status.json)")" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          age=$(( $(date +%s) - $(date -d "$(jq -r '.updated // "1970-01-01T00:00:00Z"' <<<"$live")" +%s) ))
+          if [ "$age" -gt 1800 ]; then echo "go=1" >> "$GITHUB_OUTPUT"; else echo "go=0" >> "$GITHUB_OUTPUT"; fi
+      - name: Pubblica su GitHub Pages
+        if: steps.decide.outputs.go == '1'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ github.token }}
+          publish_dir: dist
+          force_orphan: true
+          user_name: "Zeno Stato"
+          user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          commit_message: "Pagina di stato aggiornata"
