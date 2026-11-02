@@ -1,7 +1,7 @@
 url: https://api.zenocms.io/health
-status: up
-code: 200
-responseTime: 303
-lastUpdated: 2026-11-02T02:02:07.541Z
+status: down
+code: 404
+responseTime: 122
+lastUpdated: 2026-11-02T22:50:21.336Z
 startTime: 2026-11-01T00:01:10.837Z
 generator: Upptime <https://github.com/upptime/upptime>
