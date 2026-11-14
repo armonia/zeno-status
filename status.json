@@ -1,0 +1,48 @@
+{
+ "updated": "2026-11-14T19:21:15.902Z",
+ "status": "ok",
+ "services": [
+  {
+   "slug": "sito",
+   "name": "Website",
+   "status": "up",
+   "uptime90d": 100,
+   "responseMs": 271
+  },
+  {
+   "slug": "api",
+   "name": "API",
+   "status": "up",
+   "uptime90d": 99.925,
+   "responseMs": 269
+  },
+  {
+   "slug": "mcp",
+   "name": "MCP for AI agents",
+   "status": "up",
+   "uptime90d": 99.925,
+   "responseMs": 298
+  },
+  {
+   "slug": "accesso",
+   "name": "Login",
+   "status": "up",
+   "uptime90d": 99.925,
+   "responseMs": 429
+  },
+  {
+   "slug": "rest",
+   "name": "Site REST",
+   "status": "up",
+   "uptime90d": 100,
+   "responseMs": 83
+  },
+  {
+   "slug": "domini",
+   "name": "Custom domains",
+   "status": "up",
+   "uptime90d": 99.904,
+   "responseMs": 269
+  }
+ ]
+}
